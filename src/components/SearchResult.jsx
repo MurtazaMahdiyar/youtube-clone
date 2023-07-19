@@ -1,8 +1,44 @@
-import React from 'react'
+import React, {useState, useEffect, useContext} from 'react'
+import { useParams } from 'react-router-dom'
 
-function SearchResult() {
+import { fetchDataFromAPI } from '../utils/api'
+import {Context} from '../context/contextApi'
+import LeftNav from './LeftNav'
+import SearchResultVideoCard from './SearchResultVideoCard'
+
+
+const SearchResult = () => {
+  const [result, setResult] = useState()
+  const {searchQuery} = useParams()
+  const {setLoading} = useContext(Context)
+
+  useEffect(() => {
+    document.getElementById('root').classList.remove('custom-h')
+    fetchSearchResults()
+  }, [searchQuery])
+
+  const fetchSearchResults = () => {
+    setLoading(true)
+    fetchDataFromAPI(`search/?q=${searchQuery}`).then((res) => {
+      setResult(res.contents)
+      setLoading(false)
+    })
+  }
+
   return (
-    <div>SearchResult</div>
+    <div className="flex flex-row h-[calc(100%-56px)]">
+      <LeftNav />
+      <div className="grow w-[calc(100%-240px) bg-black h-full overflow-y-auto">
+        <div className="grid grid-cols-1 gap-2 p-5">
+          {result?.map((video) => {
+            if(video?.type !== 'video') return false
+            return (
+              <SearchResultVideoCard key={video?.videoId} video={video?.video} />
+            )
+          })}
+        </div>
+      </div>
+    </div>
   )
 }
 
